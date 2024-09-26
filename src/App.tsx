@@ -1,56 +1,62 @@
 import { useState } from "react";
 
 import { open } from "@tauri-apps/plugin-dialog";
-import { readTextFileLines } from "@tauri-apps/plugin-fs";
+import { readFile } from "@tauri-apps/plugin-fs";
 import TransactionTable from "./components/TransactionTable";
 import { Button } from "@mantine/core";
-import { IconDownload } from "@tabler/icons-react";
+import { IconCactus, IconDownload } from "@tabler/icons-react";
+import Database from "@tauri-apps/plugin-sql";
+import { read, utils } from "xlsx";
+import { convertExcelDate, convertToDateString } from "./lib/helper";
 
 import "./App.css";
+import AddTransaction from "./components/addTransaction/AddTransaction";
+
+// capire la migrazione di sqlx come funziona
+//aggiungere possiblità di aggiungere singola transazione
+// aggiungere delete dei selezionati
+//salvare categorie nuove
 
 export type DataObject = {
   [key: string]: string | null;
 };
 
 function App() {
-  const [data, setData] = useState<DataObject[]>([]);
+  const [data, setData] = useState<(string | number | Date)[][]>([]);
   const [header, setHeader] = useState<string[]>([]);
 
-  const onChangeField = (newValue: string, key: string, index: number) => {
+  const onChangeField = (
+    newValue: string | number | Date,
+    columnId: number,
+    rowId: number
+  ) => {
     const newData = [...data];
-    newData[index][key] = newValue;
+    console.log(data);
+
+    newData[rowId][columnId] = newValue;
+    console.log(newData);
     setData(newData);
   };
 
-  const onChangeColumnField = (
-    oldColumnName: string,
-    newColumnName: string
-  ) => {
-    console.log(oldColumnName);
+  const onChangeColumnField = (columnId: number, newColumnName: string) => {
+    console.log(columnId);
     console.log(newColumnName);
 
-    const newData = [...data].map((d) => {
-      if (oldColumnName in d) {
-        d[newColumnName] = d[oldColumnName];
-        delete d[oldColumnName];
-      }
-      return d;
-    });
-    console.log(newData);
-    setHeader([
-      ...header.map((h) => (h === oldColumnName ? newColumnName : h)),
-    ]);
-    setData(newData);
+    const newHeader = [...header];
+    newHeader[columnId] = newColumnName;
+    setHeader(newHeader);
   };
 
-  const deleteColumn = (columnName: string) => {
-    setHeader([...header.filter((h) => h !== columnName)]);
+  const deleteColumn = (columnId: number) => {
+    console.log(columnId);
+    const newHeader = [...header];
+    newHeader.splice(columnId, 1);
+    setHeader(newHeader);
     setData(
       [...data].map((d) => {
-        if (columnName in d) {
-          delete d[columnName];
-        }
-        return d;
+        const newD = [...d];
+        newD.splice(columnId, 1);
+        return newD;
       })
     );
   };
@@ -59,42 +65,102 @@ function App() {
     setData([...data.filter((_, i) => i !== index)]);
   };
 
+  const save = async () => {
+    const db = await Database.load(
+      "postgresql://postgres:checkmamoney@localhost:5432/checkmamoney"
+    );
+
+    try {
+      let query = "INSERT INTO transaction (data) VALUES ";
+      let normalizedQuery =
+        "INSERT INTO normalized_transaction (date, amount, description, category) VALUES";
+
+      const values: any[] = [];
+      const normalizedValues: any[] = [];
+
+      data.forEach((record: (string | number | Date)[], i: number) => {
+        query += `($${i + 1}),`;
+        const transactionObject = header.reduce((obj, header, index) => {
+          obj[header] = record[index];
+          return obj;
+        }, {} as any);
+
+        values.push(transactionObject);
+
+        normalizedQuery += `($${i * 4 + 1}::date, $${i * 4 + 2}, $${
+          i * 4 + 3
+        }, $${i * 4 + 4}),`;
+
+        const date =
+          typeof record[0] === "number"
+            ? convertExcelDate(record[0])
+            : (record[0] as Date);
+
+        normalizedValues.push(
+          convertToDateString(date.toISOString()),
+          record[7],
+          record[1],
+          record[5]
+        );
+      });
+
+      query = query.slice(0, -1);
+      normalizedQuery = normalizedQuery.slice(0, -1);
+
+      query += " RETURNING id, data";
+      normalizedQuery += " RETURNING id";
+
+      console.log(normalizedQuery);
+      console.log(normalizedValues);
+
+      const result = await db.execute(query, values);
+
+      console.log("Insert successful:", result);
+
+      const normalizedResult = await db.execute(
+        normalizedQuery,
+        normalizedValues
+      );
+
+      console.log(
+        "Insert normalized transaction successful:",
+        normalizedResult
+      );
+
+      setData([]);
+    } catch (error) {
+      console.log("Error during insertion:", error);
+    } finally {
+      console.log("Done");
+    }
+  };
+
   const importFile = async () => {
     try {
       const filePath = await open({
         filters: [
           {
             name: "CSV",
-            extensions: ["csv"],
+            extensions: ["csv", "xlsx"],
           },
         ],
       });
       if (!filePath) return null;
+      const d = await readFile(filePath);
+      const wb = read(d);
 
-      const lines = await readTextFileLines(filePath);
+      const ws = wb.Sheets[wb.SheetNames[0]];
 
-      let header: string[] = [];
-      const dataObjects: DataObject[] = [];
-
-      for await (const line of lines) {
-        if (header.length === 0) {
-          header = line.split(";");
-          console.log(`Header: ${header}`);
-          setHeader(header);
-          continue;
-        }
-
-        const values = line.split(";");
-        const dataObject = header.reduce<DataObject>((obj, key, index) => {
-          obj[key] = values[index] || null;
-          return obj;
-        }, {} as DataObject);
-
-        dataObjects.push(dataObject);
+      const array: string[][] = utils.sheet_to_json(ws, {
+        header: 1,
+        blankrows: false,
+      });
+      console.log(array);
+      const header = array.shift();
+      if (header) {
+        setHeader(header);
+        setData(array);
       }
-
-      console.log(dataObjects);
-      setData(dataObjects);
     } catch (error) {
       console.error("Error reading file:", error);
     }
@@ -111,6 +177,15 @@ function App() {
         Import
       </Button>
       {data.length > 0 && (
+        <Button
+          onClick={save}
+          radius="xl"
+          rightSection={<IconCactus size={14} />}
+        >
+          Save
+        </Button>
+      )}
+      {data.length > 0 && (
         <TransactionTable
           header={header}
           data={data}
@@ -120,6 +195,7 @@ function App() {
           deleteColumn={deleteColumn}
         />
       )}
+      <AddTransaction />
     </div>
   );
 }

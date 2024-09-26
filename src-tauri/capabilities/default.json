@@ -9,6 +9,9 @@
     "core:app:default",
     "shell:allow-open",
     "dialog:default",
-    "fs:default"
+    "fs:default",
+    "sql:default",
+    "sql:allow-load",
+    "sql:allow-execute"
   ]
 }
