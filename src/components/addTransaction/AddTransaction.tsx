@@ -1,9 +1,9 @@
 import { Button, Grid, Input, NumberInput, TextInput } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import SelectCreatable from "../selectCreatable";
-import { DateInput } from "@mantine/dates";
 import { convertToDateString } from "../../lib/helper";
 import Database from "@tauri-apps/plugin-sql";
+import { DateInput } from "@mantine/dates";
 
 export default function AddTransaction() {
   const form = useForm({
@@ -46,7 +46,7 @@ export default function AddTransaction() {
   return (
     <form onSubmit={form.onSubmit((values) => saveSingleTransaction(values))}>
       <Grid justify="flex-start" align="end" px={15}>
-        <Grid.Col span={{ base: 12, md: 2 }}>
+        <Grid.Col span={{ base: 12, sm: 2 }}>
           <Input.Label required>Category</Input.Label>
           <SelectCreatable
             onChangeField={onChangeField}
@@ -54,7 +54,7 @@ export default function AddTransaction() {
             rowId={0}
           />
         </Grid.Col>
-        <Grid.Col span={{ base: 12, md: 2 }}>
+        <Grid.Col span={{ base: 12, sm: 2 }}>
           <TextInput
             withAsterisk
             radius="md"
@@ -64,7 +64,7 @@ export default function AddTransaction() {
             {...form.getInputProps("description")}
           />
         </Grid.Col>
-        <Grid.Col span={{ base: 12, md: 2 }}>
+        <Grid.Col span={{ base: 12, sm: 2 }}>
           <DateInput
             valueFormat="YYYY MMM DD"
             value={new Date(form.values.date)}
@@ -76,7 +76,7 @@ export default function AddTransaction() {
             }
           />
         </Grid.Col>
-        <Grid.Col span={{ base: 12, md: 2 }}>
+        <Grid.Col span={{ base: 12, sm: 2 }}>
           <NumberInput
             variant="unstyled"
             radius="md"
@@ -86,7 +86,7 @@ export default function AddTransaction() {
             onChange={(e) => form.setFieldValue("amount", e as number)}
           />
         </Grid.Col>
-        <Grid.Col span={{ base: 12, md: 2 }}>
+        <Grid.Col span={{ base: 12, sm: 2 }}>
           <Button type="submit">Add</Button>
         </Grid.Col>
       </Grid>

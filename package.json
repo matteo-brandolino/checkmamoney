@@ -10,10 +10,11 @@
     "tauri": "tauri"
   },
   "dependencies": {
-    "@mantine/core": "^7.12.2",
-    "@mantine/dates": "^7.12.2",
+    "@mantine/charts": "^7.13.0",
+    "@mantine/core": "^7.13.0",
+    "@mantine/dates": "^7.13.0",
     "@mantine/form": "^7.13.0",
-    "@mantine/hooks": "^7.12.2",
+    "@mantine/hooks": "^7.13.0",
     "@tabler/icons-react": "^3.16.0",
     "@tauri-apps/api": ">=2.0.0-rc.0",
     "@tauri-apps/plugin-dialog": "^2.0.0-rc",
@@ -21,8 +22,10 @@
     "@tauri-apps/plugin-shell": ">=2.0.0-rc.0",
     "@tauri-apps/plugin-sql": "2.0.0-rc.1",
     "clsx": "^2.1.1",
+    "dayjs": "^1.11.13",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "recharts": "^2.12.7",
     "xlsx": "^0.18.5"
   },
   "devDependencies": {
