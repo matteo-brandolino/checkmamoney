@@ -1,30 +1,23 @@
-import { MonthPickerInput } from "@mantine/dates";
 import "./App.css";
 import TransactionTableContainer from "./components/TransactionTable";
 import AddTransaction from "./components/addTransaction/AddTransaction";
 import Charts from "./components/charts";
 import { useState } from "react";
+import MonthPicker from "./components/monthPickerInput/MonthPickerInput";
+import { MonthType } from "./@types";
 
 // aggiungere delete dei selezionati
 //salvare categorie nuove
 
 function App() {
-  const [value, setValue] = useState<[Date | null, Date | null]>([null, null]);
-  console.log(value);
-
+  const [month, setMonth] = useState<MonthType>([]);
   return (
-    <div>
-      <MonthPickerInput
-        type="range"
-        label="Pick dates range"
-        placeholder="Pick dates range"
-        value={value}
-        onChange={setValue}
-      />
-      <Charts />
+    <>
+      <MonthPicker month={month} setMonth={setMonth} />
+      <Charts month={month} />
       <TransactionTableContainer />
       <AddTransaction />
-    </div>
+    </>
   );
 }
 

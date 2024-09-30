@@ -1,12 +1,7 @@
 import { PieChart } from "@mantine/charts";
-import {
-  Blockquote,
-  Group,
-  SemiCircleProgress,
-  Table,
-  Text,
-} from "@mantine/core";
-import { IconTrendingDown, IconTrendingUp } from "@tabler/icons-react";
+import { Group, Table, Text } from "@mantine/core";
+import Summary from "./Summary";
+import { MonthType } from "../../@types";
 const data = [
   { name: "USA", value: 400, color: "indigo.6" },
   { name: "India", value: 300, color: "yellow.6" },
@@ -20,7 +15,7 @@ const elements = [
   { position: 56, mass: 137.33, symbol: "Ba", name: "Barium" },
   { position: 58, mass: 140.12, symbol: "Ce", name: "Cerium" },
 ];
-function Charts() {
+function Charts({ month }: { month: MonthType }) {
   const rows = elements.map((element) => (
     <Table.Tr key={element.name}>
       <Table.Td>{element.position}</Table.Td>
@@ -29,25 +24,10 @@ function Charts() {
       <Table.Td>{element.mass}</Table.Td>
     </Table.Tr>
   ));
-  const icon = <IconTrendingUp />;
-  const icon2 = <IconTrendingDown />;
+
   return (
     <>
-      <Blockquote color="green" iconSize={38} icon={icon} mt="xl">
-        1800
-      </Blockquote>
-      <SemiCircleProgress
-        fillDirection="left-to-right" //right-to-left
-        orientation="up"
-        filledSegmentColor="green" //red
-        size={200}
-        thickness={12}
-        value={40}
-        label="40%"
-      />
-      <Blockquote color="red" iconSize={38} icon={icon2} mt="xl">
-        -2000
-      </Blockquote>
+      <Summary month={month} />
       <Group gap={50}>
         <div>
           <Text fz="xs" mb="sm" ta="center">
