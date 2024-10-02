@@ -1,5 +1,5 @@
 import "./App.css";
-import TransactionTableContainer from "./components/TransactionTable";
+import TransactionTableContainer from "./components/transactionTable";
 import AddTransaction from "./components/addTransaction/AddTransaction";
 import Charts from "./components/charts";
 import { useState } from "react";
@@ -10,7 +10,8 @@ import { MonthType } from "./@types";
 //salvare categorie nuove
 
 function App() {
-  const [month, setMonth] = useState<MonthType>([]);
+  const [month, setMonth] = useState<MonthType>([new Date()]);
+
   return (
     <>
       <MonthPicker month={month} setMonth={setMonth} />

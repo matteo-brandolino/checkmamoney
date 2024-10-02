@@ -86,7 +86,7 @@ function TransactionTableContainer() {
         normalizedValues.push(
           convertToDateString(date.toISOString()),
           record[7],
-          record[1],
+          record[2],
           record[5]
         );
       });

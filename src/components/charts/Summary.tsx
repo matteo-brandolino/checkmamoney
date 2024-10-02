@@ -1,16 +1,16 @@
 import { Group, Paper, Text, ThemeIcon, SimpleGrid } from "@mantine/core";
 import { IconArrowUpRight, IconArrowDownRight } from "@tabler/icons-react";
-import { MonthType, SummaryDataType } from "../../@types";
+import { SummaryDataType } from "../../@types";
 import connectDB from "../../lib/db";
 import { useEffect, useState } from "react";
 
 const initialData = [
-  { title: "total_income", value: "13,456" },
-  { title: "total_expense", value: "4,145" },
-  { title: "percentage", value: "745" },
+  { title: "total_income", value: "0" },
+  { title: "total_expense", value: "0" },
+  { title: "percentage", value: "0%" },
 ];
 
-function Summary({ month }: { month: MonthType }) {
+function Summary({ dates }: { dates: string[] }) {
   const [data, setData] = useState(initialData);
 
   useEffect(() => {
@@ -18,15 +18,10 @@ function Summary({ month }: { month: MonthType }) {
       const db = await connectDB();
       try {
         if (!db) throw Error("Db ko");
-        console.log(month);
-        const dates = month.map((m) => {
-          const d = new Date(m);
-          return (d.getMonth() + 1).toString().padStart(2, "0");
-        });
-
         console.log(`Trying to get summary info: ${dates}`);
         let whereClause = "";
         const datesValues: string[] = [];
+        if (!dates || dates.length < 1) return;
         dates.forEach((d, i) => {
           if (i === 0) {
             whereClause +=
@@ -48,8 +43,9 @@ function Summary({ month }: { month: MonthType }) {
             ${whereClause};`,
           datesValues
         );
-        console.log("Get Summary:", result);
+        console.log("Get Summary:", result, dates);
         const res = result[0];
+        if (!res || !res.total_income || !res.total_expense) return;
         const fixedTotalIncome = res.total_income.toFixed(2);
         const fixedTotalExpense = res.total_expense.toFixed(2);
         let percentage = "0";
@@ -86,7 +82,7 @@ function Summary({ month }: { month: MonthType }) {
     };
 
     getSummary();
-  }, [month]);
+  }, [dates]);
 
   const stats = data.map((stat) => {
     const isPositive = parseFloat(stat.value.replace("€", "")) > 0;
