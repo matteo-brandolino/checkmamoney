@@ -19,3 +19,9 @@ export type PieChartsPercentageDataType = {
   value: number;
   color: string;
 };
+
+export type TopElements = {
+  description: string;
+  category: string;
+  amount: number;
+};

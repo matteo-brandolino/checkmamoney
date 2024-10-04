@@ -8,8 +8,8 @@ type MonthPickerProps = {
 };
 function MonthPicker({ month, setMonth }: MonthPickerProps) {
   return (
-    <Container size="lg" py={15}>
-      <Flex gap={{ base: "sm" }} justify={{ sm: "end" }}>
+    <Container size="96%" py={15}>
+      <Flex justify={{ sm: "end" }}>
         <MonthPickerInput
           type="multiple"
           label="Pick dates range"

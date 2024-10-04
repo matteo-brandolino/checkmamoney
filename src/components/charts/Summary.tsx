@@ -1,4 +1,11 @@
-import { Group, Paper, Text, ThemeIcon, SimpleGrid } from "@mantine/core";
+import {
+  Group,
+  Paper,
+  Text,
+  ThemeIcon,
+  SimpleGrid,
+  Container,
+} from "@mantine/core";
 import { IconArrowUpRight, IconArrowDownRight } from "@tabler/icons-react";
 import { SummaryDataType } from "../../@types";
 import connectDB from "../../lib/db";
@@ -21,7 +28,6 @@ function Summary({ dates }: { dates: string[] }) {
         console.log(`Trying to get summary info: ${dates}`);
         let whereClause = "";
         const datesValues: string[] = [];
-        if (!dates || dates.length < 1) return;
         dates.forEach((d, i) => {
           if (i === 0) {
             whereClause +=
@@ -56,9 +62,6 @@ function Summary({ dates }: { dates: string[] }) {
             100
           ).toFixed(2);
         }
-
-        console.log(percentage);
-
         const mappedData = [
           {
             title: "total_income",
@@ -71,7 +74,7 @@ function Summary({ dates }: { dates: string[] }) {
           {
             title: "percentage",
             value: `${
-              res.total_income - res.total_expense < 0 ? "-" : ""
+              res.total_income + res.total_expense < 0 ? "-" : ""
             }${percentage}%`,
           },
         ];
@@ -117,9 +120,9 @@ function Summary({ dates }: { dates: string[] }) {
   });
 
   return (
-    <div>
+    <Container size="98%" py={15}>
       <SimpleGrid cols={{ base: 1, sm: 3 }}>{stats}</SimpleGrid>
-    </div>
+    </Container>
   );
 }
 

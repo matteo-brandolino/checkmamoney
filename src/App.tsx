@@ -10,7 +10,7 @@ import { MonthType } from "./@types";
 //salvare categorie nuove
 
 function App() {
-  const [month, setMonth] = useState<MonthType>([new Date()]);
+  const [month, setMonth] = useState<MonthType>([]);
 
   return (
     <>

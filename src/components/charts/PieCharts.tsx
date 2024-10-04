@@ -1,30 +1,24 @@
 import { PieChart } from "@mantine/charts";
-import { Group, Table, Text } from "@mantine/core";
+import { Grid, Text } from "@mantine/core";
 import { useEffect, useState } from "react";
 import connectDB from "../../lib/db";
-import { PieChartsDataType, PieChartsPercentageDataType } from "../../@types";
+import {
+  PieChartsDataType,
+  PieChartsPercentageDataType,
+  TopElements,
+} from "../../@types";
 import { COLORS } from "../../constants";
+import TopTable from "./TopTable";
 
-const elements = [
-  { position: 6, name: "Carbon" },
-  { position: 7, name: "Nitrogen" },
-  { position: 39, name: "Yttrium" },
-  { position: 56, name: "Barium" },
-  { position: 58, name: "Cerium" },
-];
 function PieCharts({ dates }: { dates: string[] }) {
   const [positiveData, setPositiveData] = useState<
     PieChartsPercentageDataType[]
   >([]);
+  const [topPositiveData, setTopPositiveData] = useState<TopElements[]>([]);
   const [negativeData, setNegativeData] = useState<
     PieChartsPercentageDataType[]
   >([]);
-  const rows = elements.map((element) => (
-    <Table.Tr key={element.name}>
-      <Table.Td>{element.position}</Table.Td>
-      <Table.Td>{element.name}</Table.Td>
-    </Table.Tr>
-  ));
+  const [topNegativeData, setTopNegativeData] = useState<TopElements[]>([]);
 
   useEffect(() => {
     const getPieCharts = async () => {
@@ -84,7 +78,39 @@ function PieCharts({ dates }: { dates: string[] }) {
         }[] = [];
         let indexColor = 0;
         let negativeIndexColor = 0;
+        let positiveCount: number = 0;
+        let negativeCount: number = 0;
+        // clear array after filtering
+        setTopPositiveData([]);
+        setTopNegativeData([]);
         result.forEach((r) => {
+          // refactor needed
+          if (positiveCount < 10) {
+            if (r.transaction_type === "positive") {
+              positiveCount++;
+              setTopPositiveData((prev) => [
+                ...prev,
+                {
+                  description: r.description,
+                  category: r.category,
+                  amount: r.amount,
+                },
+              ]);
+            }
+          }
+          if (negativeCount < 10) {
+            if (r.transaction_type === "negative") {
+              negativeCount++;
+              setTopNegativeData((prev) => [
+                ...prev,
+                {
+                  description: r.description,
+                  category: r.category,
+                  amount: r.amount,
+                },
+              ]);
+            }
+          }
           if (
             r.transaction_type === "positive" &&
             (!positiveDataToRender ||
@@ -156,58 +182,40 @@ function PieCharts({ dates }: { dates: string[] }) {
     getPieCharts();
   }, [dates]);
   return (
-    <div>
-      <Group gap={50}>
-        <div>
-          <Text fz="xs" mb="sm" ta="center">
-            Entrate
-          </Text>
-          <PieChart
-            data={positiveData}
-            withTooltip
-            withLabelsLine
-            withLabels
-            labelsPosition="inside"
-            labelsType="percent"
-            tooltipDataSource="segment"
-            mx="auto"
-          />
-          <Table>
-            <Table.Thead>
-              <Table.Tr>
-                <Table.Th>Descrizione</Table.Th>
-                <Table.Th>Importo</Table.Th>
-              </Table.Tr>
-            </Table.Thead>
-            <Table.Tbody>{rows}</Table.Tbody>
-          </Table>
-        </div>
-        <div>
-          <Text fz="xs" mb="sm" ta="center">
-            Uscite
-          </Text>
-          <PieChart
-            data={negativeData}
-            withTooltip
-            withLabelsLine
-            withLabels
-            labelsPosition="inside"
-            labelsType="percent"
-            tooltipDataSource="segment"
-            mx="auto"
-          />
-          <Table>
-            <Table.Thead>
-              <Table.Tr>
-                <Table.Th>Element position</Table.Th>
-                <Table.Th>Element name</Table.Th>
-              </Table.Tr>
-            </Table.Thead>
-            <Table.Tbody>{rows}</Table.Tbody>
-          </Table>
-        </div>
-      </Group>
-    </div>
+    <Grid justify="center">
+      <Grid.Col span={5}>
+        <Text fz="xs" mb="sm" ta="center">
+          Entrate
+        </Text>
+        <PieChart
+          data={positiveData}
+          withTooltip
+          withLabelsLine
+          withLabels
+          labelsPosition="inside"
+          labelsType="percent"
+          tooltipDataSource="segment"
+          mx="auto"
+        />
+        <TopTable elements={topPositiveData} />
+      </Grid.Col>
+      <Grid.Col span={5}>
+        <Text fz="xs" mb="sm" ta="center">
+          Uscite
+        </Text>
+        <PieChart
+          data={negativeData}
+          withTooltip
+          withLabelsLine
+          withLabels
+          labelsPosition="inside"
+          labelsType="percent"
+          tooltipDataSource="segment"
+          mx="auto"
+        />
+        <TopTable elements={topNegativeData} />
+      </Grid.Col>
+    </Grid>
   );
 }
 
