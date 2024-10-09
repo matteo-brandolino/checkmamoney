@@ -6,6 +6,7 @@ import { useState } from "react";
 import MonthPicker from "./components/monthPickerInput/MonthPickerInput";
 import { MonthType } from "./@types";
 
+// unire dates nei vari charts e tenere conto degli anni
 // aggiungere delete dei selezionati
 //salvare categorie nuove
 

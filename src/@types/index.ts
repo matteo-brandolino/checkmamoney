@@ -20,6 +20,12 @@ export type PieChartsPercentageDataType = {
   color: string;
 };
 
+export type BarChartsType = {
+  category: string;
+  month: string;
+  total: number;
+};
+
 export type TopElements = {
   description: string;
   category: string;

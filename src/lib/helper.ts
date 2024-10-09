@@ -39,3 +39,28 @@ export function convertToDateString(isoDate: string) {
 
   return `${year}-${month}-${day}`;
 }
+
+export function getMonthName(monthNumber: number) {
+  const months = [
+    "Gennaio",
+    "Febbraio",
+    "Marzo",
+    "Aprile",
+    "Maggio",
+    "Giugno",
+    "Luglio",
+    "Agosto",
+    "Settembre",
+    "Ottobre",
+    "Novembre",
+    "Dicembre",
+  ];
+
+  // Convert monthNumber to a number and check if it's valid
+  const monthIndex = Number(monthNumber) - 1; // Adjusting for zero-based index
+  if (monthIndex >= 0 && monthIndex < months.length) {
+    return months[monthIndex];
+  } else {
+    return "Invalid month number";
+  }
+}
