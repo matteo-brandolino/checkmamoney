@@ -1,5 +1,5 @@
 import { PieChart } from "@mantine/charts";
-import { Grid, Text } from "@mantine/core";
+import { Container, Grid, Text } from "@mantine/core";
 import { useEffect, useState } from "react";
 import connectDB from "../../lib/db";
 import {
@@ -9,6 +9,7 @@ import {
 } from "../../@types";
 import { COLORS } from "../../constants";
 import TopTable from "./TopTable";
+import { getWhereClause } from "../../lib/helper";
 
 function PieCharts({ dates }: { dates: string[] }) {
   const [positiveData, setPositiveData] = useState<
@@ -26,19 +27,7 @@ function PieCharts({ dates }: { dates: string[] }) {
       try {
         if (!db) throw Error("Db ko");
         console.log(`Trying to get pie charts info: ${dates}`);
-        let whereClause = "";
-        const datesValues: string[] = [];
-        dates.forEach((d, i) => {
-          if (i === 0) {
-            whereClause +=
-              "WHERE TO_CHAR(DATE_TRUNC('month', date), 'MM') = $1";
-          } else {
-            whereClause += ` OR TO_CHAR(DATE_TRUNC('month', date), 'MM') = $${
-              i + 1
-            }`;
-          }
-          datesValues.push(d);
-        });
+        let [whereClause, datesValues] = getWhereClause(dates);
 
         const result: PieChartsDataType[] = await db.select(
           `WITH categorized_transactions AS (
@@ -182,40 +171,42 @@ function PieCharts({ dates }: { dates: string[] }) {
     getPieCharts();
   }, [dates]);
   return (
-    <Grid justify="center">
-      <Grid.Col span={5}>
-        <Text fz="xs" mb="sm" ta="center">
-          Entrate
-        </Text>
-        <PieChart
-          data={positiveData}
-          withTooltip
-          withLabelsLine
-          withLabels
-          labelsPosition="inside"
-          labelsType="percent"
-          tooltipDataSource="segment"
-          mx="auto"
-        />
-        <TopTable elements={topPositiveData} />
-      </Grid.Col>
-      <Grid.Col span={5}>
-        <Text fz="xs" mb="sm" ta="center">
-          Uscite
-        </Text>
-        <PieChart
-          data={negativeData}
-          withTooltip
-          withLabelsLine
-          withLabels
-          labelsPosition="inside"
-          labelsType="percent"
-          tooltipDataSource="segment"
-          mx="auto"
-        />
-        <TopTable elements={topNegativeData} />
-      </Grid.Col>
-    </Grid>
+    <Container>
+      <Grid justify="center">
+        <Grid.Col span={5}>
+          <Text fz="xs" mb="sm" ta="center">
+            Entrate
+          </Text>
+          <PieChart
+            data={positiveData}
+            withTooltip
+            withLabelsLine
+            withLabels
+            labelsPosition="inside"
+            labelsType="percent"
+            tooltipDataSource="segment"
+            mx="auto"
+          />
+          <TopTable elements={topPositiveData} />
+        </Grid.Col>
+        <Grid.Col span={5}>
+          <Text fz="xs" mb="sm" ta="center">
+            Uscite
+          </Text>
+          <PieChart
+            data={negativeData}
+            withTooltip
+            withLabelsLine
+            withLabels
+            labelsPosition="inside"
+            labelsType="percent"
+            tooltipDataSource="segment"
+            mx="auto"
+          />
+          <TopTable elements={topNegativeData} />
+        </Grid.Col>
+      </Grid>
+    </Container>
   );
 }
 

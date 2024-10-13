@@ -40,7 +40,7 @@ export function convertToDateString(isoDate: string) {
   return `${year}-${month}-${day}`;
 }
 
-export function getMonthName(monthNumber: number) {
+export function getMonthName(date: string) {
   const months = [
     "Gennaio",
     "Febbraio",
@@ -55,12 +55,29 @@ export function getMonthName(monthNumber: number) {
     "Novembre",
     "Dicembre",
   ];
-
-  // Convert monthNumber to a number and check if it's valid
-  const monthIndex = Number(monthNumber) - 1; // Adjusting for zero-based index
+  const month = Number(date.split("-")[0]);
+  const monthIndex = month - 1;
   if (monthIndex >= 0 && monthIndex < months.length) {
     return months[monthIndex];
   } else {
     return "Invalid month number";
   }
 }
+
+export function getWhereClause(dates: string[]): [string, string[]] {
+  let whereClause = "";
+  const datesValues: string[] = [];
+  dates.forEach((d, i) => {
+    if (i === 0) {
+      whereClause += "WHERE TO_CHAR(DATE_TRUNC('month', date), 'MM-YYYY') = $1";
+    } else {
+      whereClause += ` OR TO_CHAR(DATE_TRUNC('month', date), 'MM-YYYY') = $${
+        i + 1
+      }`;
+    }
+    datesValues.push(d);
+  });
+  return [whereClause, datesValues];
+}
+
+export const month = "TO_CHAR(DATE_TRUNC('month', date), 'MM-YYYY') as month";

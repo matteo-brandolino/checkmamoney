@@ -4,7 +4,7 @@ import { BarChartsType } from "../../@types";
 import { BarChart } from "@mantine/charts";
 import { COLORS } from "../../constants";
 import { Container } from "@mantine/core";
-import { getMonthName } from "../../lib/helper";
+import { getMonthName, getWhereClause, month } from "../../lib/helper";
 interface MonthData {
   month: string;
   [category: string]: number | string;
@@ -20,33 +20,22 @@ export const data = [
 function BarCharts({ dates }: { dates: string[] }) {
   const [barChartsData, setBarChartsData] = useState<MonthData[] | null>(null);
   const [categories, setCategories] = useState<string[]>();
+
   useEffect(() => {
     const getBarChartData = async () => {
       const db = await connectDB();
       try {
         if (!db) throw Error("Db ko");
         console.log(`Trying to get bar charts info: ${dates}`);
-        let whereClause = "";
-        const datesValues: string[] = [];
-        dates.forEach((d, i) => {
-          if (i === 0) {
-            whereClause +=
-              "WHERE TO_CHAR(DATE_TRUNC('month', date), 'MM') = $1";
-          } else {
-            whereClause += ` OR TO_CHAR(DATE_TRUNC('month', date), 'MM') = $${
-              i + 1
-            }`;
-          }
-          datesValues.push(d);
-        });
+        let [whereClause, datesValues] = getWhereClause(dates);
 
         const result: BarChartsType[] = await db.select(
           `SELECT category, 
-          TO_CHAR(DATE_TRUNC('month', date), 'MM') as month,
+          ${month},
           COUNT(*) as total 
           FROM normalized_transaction
           ${whereClause}
-          GROUP BY category, TO_CHAR(DATE_TRUNC('month', date), 'MM') 
+          GROUP BY category, TO_CHAR(DATE_TRUNC('month', date), 'MM-YYYY') 
           ORDER BY total desc;`,
           datesValues
         );
@@ -54,7 +43,7 @@ function BarCharts({ dates }: { dates: string[] }) {
         const categories: string[] = [];
         const data = result.reduce(
           (acc: { [month: string]: MonthData }, curr) => {
-            const m = getMonthName(Number(curr.month));
+            const m = getMonthName(curr.month);
             if (!acc[m]) {
               acc[m] = { month: m };
             }
@@ -92,8 +81,9 @@ function BarCharts({ dates }: { dates: string[] }) {
 
     getBarChartData();
   }, [dates]);
+
   return (
-    <Container h={600} size="98%" py={15}>
+    <Container pt={15} pb={100}>
       {barChartsData && categories && (
         <BarChart
           withLegend

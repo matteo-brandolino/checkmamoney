@@ -1,11 +1,40 @@
-import { Button, Grid, Input, NumberInput, TextInput } from "@mantine/core";
+import {
+  Button,
+  Container,
+  Flex,
+  Grid,
+  Input,
+  NumberInput,
+  TextInput,
+} from "@mantine/core";
 import { useForm } from "@mantine/form";
 import SelectCreatable from "../selectCreatable";
 import { convertToDateString } from "../../lib/helper";
 import Database from "@tauri-apps/plugin-sql";
 import { DateInput } from "@mantine/dates";
+import { useState } from "react";
+import { IconPlus } from "@tabler/icons-react";
+
+type AddButtonType = {
+  onClick?: () => void;
+};
+
+const AddButton = ({ onClick }: AddButtonType) => {
+  return (
+    <Button
+      radius="xl"
+      rightSection={<IconPlus size={14} />}
+      type={onClick ? "button" : "submit"}
+      onClick={onClick}
+    >
+      Add
+    </Button>
+  );
+};
 
 export default function AddTransaction() {
+  const [isOpen, setIsOpen] = useState(false);
+
   const form = useForm({
     mode: "controlled",
     initialValues: {
@@ -41,55 +70,68 @@ export default function AddTransaction() {
     );
     console.log("Insert normalized transaction successful:", result);
 
+    setIsOpen(false);
+
     form.reset();
   };
   return (
-    <form onSubmit={form.onSubmit((values) => saveSingleTransaction(values))}>
-      <Grid justify="flex-start" align="end" px={15}>
-        <Grid.Col span={{ base: 12, sm: 2 }}>
-          <Input.Label required>Category</Input.Label>
-          <SelectCreatable
-            onChangeField={onChangeField}
-            rowValueId={0}
-            rowId={0}
-          />
-        </Grid.Col>
-        <Grid.Col span={{ base: 12, sm: 2 }}>
-          <TextInput
-            withAsterisk
-            radius="md"
-            label="Description"
-            key={form.key("description")}
-            placeholder="Add a description..."
-            {...form.getInputProps("description")}
-          />
-        </Grid.Col>
-        <Grid.Col span={{ base: 12, sm: 2 }}>
-          <DateInput
-            valueFormat="YYYY MMM DD"
-            value={new Date(form.values.date)}
-            label="Date input"
-            placeholder="Date input"
-            onChange={(e) =>
-              e &&
-              form.setFieldValue("date", convertToDateString(e.toISOString()))
-            }
-          />
-        </Grid.Col>
-        <Grid.Col span={{ base: 12, sm: 2 }}>
-          <NumberInput
-            variant="unstyled"
-            radius="md"
-            label="Amount"
-            withAsterisk
-            value={0}
-            onChange={(e) => form.setFieldValue("amount", e as number)}
-          />
-        </Grid.Col>
-        <Grid.Col span={{ base: 12, sm: 2 }}>
-          <Button type="submit">Add</Button>
-        </Grid.Col>
-      </Grid>
-    </form>
+    <>
+      {isOpen ? (
+        <form
+          onSubmit={form.onSubmit((values) => saveSingleTransaction(values))}
+        >
+          <Flex justify="space-between" align="center">
+            <div>
+              <Input.Label required>Category</Input.Label>
+              <SelectCreatable
+                onChangeField={onChangeField}
+                rowValueId={0}
+                rowId={0}
+              />
+            </div>
+            <Container>
+              <TextInput
+                withAsterisk
+                radius="md"
+                label="Description"
+                key={form.key("description")}
+                placeholder="Add a description..."
+                {...form.getInputProps("description")}
+              />
+            </Container>
+            <Container>
+              <DateInput
+                valueFormat="YYYY MMM DD"
+                value={new Date(form.values.date)}
+                label="Date input"
+                placeholder="Date input"
+                onChange={(e) =>
+                  e &&
+                  form.setFieldValue(
+                    "date",
+                    convertToDateString(e.toISOString())
+                  )
+                }
+              />
+            </Container>
+            <Container>
+              <NumberInput
+                variant="unstyled"
+                radius="md"
+                label="Amount"
+                withAsterisk
+                value={0}
+                onChange={(e) => form.setFieldValue("amount", e as number)}
+              />
+            </Container>
+            <div>
+              <AddButton />
+            </div>
+          </Flex>
+        </form>
+      ) : (
+        <AddButton onClick={() => setIsOpen(true)} />
+      )}
+    </>
   );
 }

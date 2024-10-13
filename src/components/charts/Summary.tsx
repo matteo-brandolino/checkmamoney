@@ -10,6 +10,7 @@ import { IconArrowUpRight, IconArrowDownRight } from "@tabler/icons-react";
 import { SummaryDataType } from "../../@types";
 import connectDB from "../../lib/db";
 import { useEffect, useState } from "react";
+import { getWhereClause } from "../../lib/helper";
 
 const initialData = [
   { title: "total_income", value: "0" },
@@ -26,20 +27,7 @@ function Summary({ dates }: { dates: string[] }) {
       try {
         if (!db) throw Error("Db ko");
         console.log(`Trying to get summary info: ${dates}`);
-        let whereClause = "";
-        const datesValues: string[] = [];
-        dates.forEach((d, i) => {
-          if (i === 0) {
-            whereClause +=
-              "WHERE TO_CHAR(DATE_TRUNC('month', date), 'MM') = $1";
-          } else {
-            whereClause += ` OR TO_CHAR(DATE_TRUNC('month', date), 'MM') = $${
-              i + 1
-            }`;
-          }
-          datesValues.push(d);
-        });
-
+        let [whereClause, datesValues] = getWhereClause(dates);
         const result: SummaryDataType[] = await db.select(
           `SELECT 
                 SUM(CASE WHEN amount > 0 THEN amount ELSE 0 END)::float AS total_income,
@@ -120,7 +108,7 @@ function Summary({ dates }: { dates: string[] }) {
   });
 
   return (
-    <Container size="98%" py={15}>
+    <Container py={15}>
       <SimpleGrid cols={{ base: 1, sm: 3 }}>{stats}</SimpleGrid>
     </Container>
   );

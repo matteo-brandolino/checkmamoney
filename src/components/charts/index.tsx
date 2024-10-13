@@ -6,9 +6,10 @@ import BarChart from "./BarChart";
 function Charts({ month }: { month: MonthType }) {
   const dates = month.map((m) => {
     const d = new Date(m);
-    return (d.getMonth() + 1).toString().padStart(2, "0");
+    const monthFormatted = (d.getMonth() + 1).toString().padStart(2, "0");
+    const yearFormatted = d.getFullYear();
+    return `${monthFormatted}-${yearFormatted}`;
   });
-  console.log(dates);
 
   return (
     <>
